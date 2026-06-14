@@ -1,0 +1,70 @@
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.local
+.env.production
+.env.*.local
+*.env
+
+# ========================
+# Python / Backend
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# ========================
+# Node / Frontend
+# ========================
+node_modules/
+dist/
+.next/
+out/
+coverage/
+
+# ========================
+# Docker
+# ========================
+docker-compose.override.yml
+
+# ========================
+# Database
+# ========================
+*.sqlite3
+*.db
+pgdata/
+
+# ========================
+# IDE & OS
+# ========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+
+# ========================
+# Uploads (user data)
+# ========================
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ========================
+# Alembic
+# ========================
+# Keep migrations, ignore nothing here
