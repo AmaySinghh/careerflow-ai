@@ -320,7 +320,7 @@ function ResumeUpload() {
                   <button
                     onClick={() =>
                       navigate(
-                        `/jobs?search=${encodeURIComponent(analysis.skills[0])}`,
+                        `/jobs?search=${encodeURIComponent(analysis.skills.slice(0, 3).join(" "))}`,
                       )
                     }
                     className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded"
