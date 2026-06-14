@@ -19,12 +19,14 @@ Traditional hiring is slow, manual, and inconsistent. Recruiters spend hours scr
 
 ## Live Demo
 
-> Deployment in progress — Railway deployment coming soon.
+> **Live App:** https://successful-magic-production-5fa6.up.railway.app
+>
+> **API Docs:** https://careerflow-ai-production.up.railway.app/docs
 
 **Test Accounts:**
 | Role | Email | Password |
 |------|-------|----------|
-| Candidate | arjun@gmail.com | your-password |
+| Candidate | amay@gmail.com | amay123 |
 | Recruiter | recruiter@test.com | recruiter123 |
 
 ---
