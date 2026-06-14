@@ -318,11 +318,19 @@ function ResumeUpload() {
                     </p>
                   </div>
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      const preferredSkills = analysis.skills.filter(
+                        (s) =>
+                          !["C/C++", "C++", "C", "Arduino", "ROS"].includes(s),
+                      );
+                      const searchSkills =
+                        preferredSkills.length > 0
+                          ? preferredSkills.slice(0, 2)
+                          : analysis.skills.slice(0, 2);
                       navigate(
-                        `/jobs?search=${encodeURIComponent(analysis.skills.slice(0, 3).join(" "))}`,
-                      )
-                    }
+                        `/jobs?search=${encodeURIComponent(searchSkills[0])}`,
+                      );
+                    }}
                     className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded"
                   >
                     Find Matching Jobs →
