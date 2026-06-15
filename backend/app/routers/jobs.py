@@ -208,6 +208,9 @@ def delete_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    # Delete all applications for this job first
+    db.query(Application).filter(Application.job_id == job_id).delete()
+
     db.delete(job)
     db.commit()
     return {"message": "Job deleted successfully"}
