@@ -261,16 +261,28 @@ Return as JSON:
   ]
 }}"""
 
+    from google.genai.errors import ClientError
+
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-        ),
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+            ),
+        )
+    except ClientError as e:
+        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            raise HTTPException(
+                status_code=429,
+                detail="AI quota exceeded. Please try again tomorrow or upgrade your Gemini plan."
+            )
+        raise HTTPException(status_code=500, detail=f"AI error: {str(e)}")
 
     data = json.loads(response.text)
+
+   
     job.interview_questions = data["questions"]
     db.commit()
 
