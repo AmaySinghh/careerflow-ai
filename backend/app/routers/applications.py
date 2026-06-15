@@ -35,6 +35,26 @@ def get_missing_and_strengths(candidate_skills: list, required_skills: list):
     return missing, strengths
 
 
+def get_candidate_skills(resume: Resume) -> list:
+    """
+    Get candidate skills from DB first (persists without file).
+    Fall back to file extraction only if skills not in DB and file exists.
+    """
+    if resume and resume.skills:
+        return resume.skills
+
+    if resume and resume.filepath:
+        from app.services.ai_analysis import extract_text_from_file, analyze_resume_text
+        try:
+            resume_text = extract_text_from_file(resume.filepath)
+            analysis = analyze_resume_text(resume_text)
+            return analysis.skills
+        except Exception:
+            pass
+
+    return []
+
+
 @router.post("/{job_id}/apply", response_model=ApplicationResponse)
 def apply_to_job(
     job_id: int,
@@ -59,40 +79,18 @@ def apply_to_job(
     ).order_by(Resume.uploaded_at.desc()).first()
 
     match_score = None
-    resume_score = None
-    candidate_skills = []
 
     if latest_resume:
-        from app.services.ai_analysis import extract_text_from_file, analyze_resume_text
-        try:
-            resume_text = extract_text_from_file(latest_resume.filepath)
-            analysis = analyze_resume_text(resume_text)
-            candidate_skills = analysis.skills
-            resume_score = analysis.score
+        candidate_skills = get_candidate_skills(latest_resume)
+        if candidate_skills and job.required_skills:
+            match_score = calculate_match_score(candidate_skills, job.required_skills)
 
-            if latest_resume.score is None:
-                latest_resume.score = resume_score
-                db.add(latest_resume)
-
-            if job.required_skills:
-                match_score = calculate_match_score(candidate_skills, job.required_skills)
-        except Exception:
-            pass
-
-    if latest_resume is None:
-        auto_status = "Applied"
-    elif resume_score is not None and resume_score > 50:
-        auto_status = "Shortlisted"
-    elif resume_score is not None and resume_score <= 50:
-        auto_status = "Rejected"
-    else:
-        auto_status = "Applied"
-
+    # All applications start as Applied — recruiter manually shortlists
     application = Application(
         job_id=job_id,
         candidate_id=current_user.id,
         resume_id=latest_resume.id if latest_resume else None,
-        status=auto_status,
+        status="Applied",
         match_score=match_score,
     )
     db.add(application)
@@ -118,13 +116,7 @@ def get_my_applications(
         if app.resume_id:
             resume = db.query(Resume).filter(Resume.id == app.resume_id).first()
             if resume:
-                from app.services.ai_analysis import extract_text_from_file, analyze_resume_text
-                try:
-                    resume_text = extract_text_from_file(resume.filepath)
-                    analysis = analyze_resume_text(resume_text)
-                    candidate_skills = analysis.skills
-                except Exception:
-                    pass
+                candidate_skills = get_candidate_skills(resume)
 
         required_skills = job.required_skills or [] if job else []
 
@@ -174,18 +166,12 @@ def get_job_applicants(
         if app.resume_id:
             resume = db.query(Resume).filter(Resume.id == app.resume_id).first()
             if resume:
-                from app.services.ai_analysis import extract_text_from_file, analyze_resume_text
-                try:
-                    resume_text = extract_text_from_file(resume.filepath)
-                    analysis = analyze_resume_text(resume_text)
-                    resume_score = analysis.score
-                    resume_skills = analysis.skills
-                    if job.required_skills:
-                        missing_skills, strength_skills = get_missing_and_strengths(
-                            resume_skills, job.required_skills
-                        )
-                except Exception:
-                    pass
+                resume_score = resume.score
+                resume_skills = get_candidate_skills(resume)
+                if job.required_skills and resume_skills:
+                    missing_skills, strength_skills = get_missing_and_strengths(
+                        resume_skills, job.required_skills
+                    )
 
         result.append(ApplicationWithCandidateResponse(
             id=app.id,
@@ -264,14 +250,8 @@ def get_candidate_summary(
     if application.resume_id:
         resume = db.query(Resume).filter(Resume.id == application.resume_id).first()
         if resume:
-            from app.services.ai_analysis import extract_text_from_file, analyze_resume_text
-            try:
-                resume_text = extract_text_from_file(resume.filepath)
-                analysis = analyze_resume_text(resume_text)
-                resume_score = analysis.score
-                resume_skills = analysis.skills
-            except Exception:
-                pass
+            resume_score = resume.score
+            resume_skills = get_candidate_skills(resume)
 
     from google import genai
     import os

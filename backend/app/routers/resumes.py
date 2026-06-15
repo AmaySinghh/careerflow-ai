@@ -76,7 +76,9 @@ def analyze_resume(
     resume_text = extract_text_from_file(resume.filepath)
     result = analyze_resume_text(resume_text)
 
+    # Store both score and skills in DB so they persist without the file
     resume.score = result.score
+    resume.skills = result.skills
     db.commit()
 
     return result

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, JSON
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -11,4 +11,5 @@ class Resume(Base):
     filename = Column(String, nullable=False)
     filepath = Column(String, nullable=False)
     score = Column(Integer, nullable=True)
+    skills = Column(JSON, nullable=True)
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
