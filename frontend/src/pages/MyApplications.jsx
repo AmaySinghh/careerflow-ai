@@ -192,7 +192,8 @@ export default function MyApplications() {
                         ✓ Screening completed — Score: {app.assessment_score}
                         /100
                       </span>
-                    ) : app.has_assessment_questions ? (
+                    ) : app.status === "Shortlisted" &&
+                      app.has_assessment_questions ? (
                       <button
                         onClick={() =>
                           navigate(`/applications/${app.id}/interview`)
@@ -201,11 +202,12 @@ export default function MyApplications() {
                       >
                         🎯 Take Screening Assessment
                       </button>
-                    ) : (
+                    ) : app.status === "Shortlisted" &&
+                      !app.has_assessment_questions ? (
                       <span className="text-xs text-gray-500">
                         ⏳ Recruiter hasn't set up screening questions yet
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               );
